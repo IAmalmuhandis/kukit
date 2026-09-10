@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { notifyTimerDone } from '../utils/notifications';
+import { notifyTimerDone, notifyTimerWarning } from '../utils/notifications';
 import { primeAudio, playTick, playWarningChime } from '../utils/audio';
 
 const WARNING_THRESHOLD_SECONDS = 60;
-const TICK_THRESHOLD_SECONDS = 5;
+const TICK_THRESHOLD_SECONDS = 20;
 
 const STORAGE_KEY = 'cook-timer.timers.v1';
 
@@ -40,6 +40,7 @@ export function useTimers() {
   const [now, setNow] = useState(Date.now);
   const notifiedRef = useRef(new Set());
   const warnedRef = useRef(new Set());
+  const tickWarnedRef = useRef(new Set());
 
   // Persist on every change.
   useEffect(() => {
@@ -72,9 +73,12 @@ export function useTimers() {
   }, [now]);
 
   // Escalate attention as a running timer closes in on zero: a one-time
-  // "under a minute" chime the moment it crosses the threshold, then a soft
-  // tick each second for the final few seconds — the alarm at zero is the
-  // last, loudest stage.
+  // "under a minute" chime the moment it crosses that threshold, then —
+  // the main time warning — a soft tick every second for the final 20
+  // seconds, paired with a one-time desktop notification the moment that
+  // window starts (so it's still noticeable with the tab backgrounded or
+  // the sound missed, not just audible). The alarm at zero is the last,
+  // loudest stage.
   useEffect(() => {
     for (const t of timers) {
       if (t.status !== 'running') continue;
@@ -86,6 +90,10 @@ export function useTimers() {
       }
       if (remaining <= TICK_THRESHOLD_SECONDS) {
         playTick();
+        if (!tickWarnedRef.current.has(t.id)) {
+          tickWarnedRef.current.add(t.id);
+          notifyTimerWarning(t.label, remaining);
+        }
       }
     }
   }, [now]);
@@ -148,16 +156,19 @@ export function useTimers() {
         if (t.status === 'running') {
           const newRemaining = Math.max(0, remainingFor(t, Date.now()) + deltaSeconds);
           if (newRemaining > WARNING_THRESHOLD_SECONDS) warnedRef.current.delete(t.id);
+          if (newRemaining > TICK_THRESHOLD_SECONDS) tickWarnedRef.current.delete(t.id);
           return { ...t, endAt: Date.now() + newRemaining * 1000 };
         }
         if (t.status === 'paused') {
           const newRemaining = Math.max(0, t.remainingSeconds + deltaSeconds);
           if (newRemaining > WARNING_THRESHOLD_SECONDS) warnedRef.current.delete(t.id);
+          if (newRemaining > TICK_THRESHOLD_SECONDS) tickWarnedRef.current.delete(t.id);
           return { ...t, remainingSeconds: newRemaining };
         }
         if (t.status === 'done' && deltaSeconds > 0) {
           notifiedRef.current.delete(t.id);
           warnedRef.current.delete(t.id);
+          tickWarnedRef.current.delete(t.id);
           return { ...t, status: 'running', endAt: Date.now() + deltaSeconds * 1000 };
         }
         return t;
@@ -171,6 +182,7 @@ export function useTimers() {
         if (t.id !== id) return t;
         notifiedRef.current.delete(t.id);
         warnedRef.current.delete(t.id);
+        tickWarnedRef.current.delete(t.id);
         return {
           ...t,
           status: 'running',
@@ -184,6 +196,7 @@ export function useTimers() {
   const removeTimer = useCallback((id) => {
     notifiedRef.current.delete(id);
     warnedRef.current.delete(id);
+    tickWarnedRef.current.delete(id);
     setTimers((prev) => prev.filter((t) => t.id !== id));
   }, []);
 

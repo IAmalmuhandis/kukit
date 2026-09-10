@@ -1,8 +1,8 @@
 // Web Audio alarm — generated tone, no external asset needed.
 // Three escalating stages so attention ramps up instead of jumping straight
 // to full alarm: a one-time heads-up chime at 1 minute left, soft ticks on
-// the final few seconds, then a loud siren-style alarm at zero that loops
-// until dismissed.
+// the final 20 seconds (the main time warning — see useTimers), then a loud
+// siren-style alarm at zero that loops until dismissed.
 
 let audioCtx = null;
 let loopTimer = null;
@@ -56,7 +56,7 @@ export function playWarningChime() {
 }
 
 // Stage 2 — a single soft tick, meant to be called once per second on the
-// last few seconds of a timer, like an old wind-up kitchen dial speeding up.
+// final 20 seconds of a timer, like an old wind-up kitchen dial speeding up.
 export function playTick() {
   const ctx = getContext();
   if (ctx.state === 'suspended') ctx.resume();
