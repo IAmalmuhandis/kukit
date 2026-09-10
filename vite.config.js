@@ -20,10 +20,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icon.svg'],
       manifest: {
-        name: 'Kitchen Timer',
-        short_name: 'Kitchen Timer',
+        name: 'KUKIT',
+        short_name: 'KUKIT',
         description:
-          'Built-in cook times, multiple simultaneous timers, and a loud alarm so you stop burning dinner while multitasking.',
+          'KUKIT — built-in cook times, multiple simultaneous timers, and a loud alarm so you stop burning dinner while multitasking.',
         theme_color: '#1a1815',
         background_color: '#1a1815',
         display: 'standalone',

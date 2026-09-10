@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import GoogleSignInButton from './GoogleSignInButton';
+import Logo from './Logo';
 
 const HAS_GOOGLE = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
@@ -42,9 +43,9 @@ export default function AuthScreen() {
     <div className="auth-screen">
       <div className="auth-card">
         <div className="app__title auth-card__title">
-          <span className="app__title-icon" aria-hidden="true">⏲</span>
+          <Logo className="app__title-icon" />
           <div>
-            <h1>Kitchen Timer</h1>
+            <h1>KUKIT</h1>
             <p className="app__subtitle">Sign in to sync your foods and lists across devices.</p>
           </div>
         </div>

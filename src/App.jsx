@@ -6,6 +6,7 @@ import GroceriesView from './components/GroceriesView';
 import ReportsView from './components/ReportsView';
 import SleepWarning from './components/SleepWarning';
 import AuthScreen from './components/AuthScreen';
+import Logo from './components/Logo';
 import './App.css';
 
 const STORAGE_KEY = 'cook-timer.active-tab.v1';
@@ -46,9 +47,9 @@ export default function App() {
     <div className="app">
       <header className="app__header no-print">
         <div className="app__title">
-          <span className="app__title-icon" aria-hidden="true">⏲</span>
+          <Logo className="app__title-icon" />
           <div>
-            <h1>Kitchen Timer</h1>
+            <h1>KUKIT</h1>
             <p className="app__subtitle">Start it, walk away, don't burn dinner.</p>
           </div>
         </div>

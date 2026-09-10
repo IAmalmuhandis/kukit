@@ -24,9 +24,8 @@
 }
 
 .app__title-icon {
-  font-size: 2.4rem;
-  line-height: 1;
-  color: var(--amber-500);
+  flex-shrink: 0;
+  display: block;
 }
 
 .app__title h1 {
