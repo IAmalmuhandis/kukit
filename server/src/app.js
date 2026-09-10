@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.js';
 import foodsRoutes from './routes/foods.js';
 import overridesRoutes from './routes/overrides.js';
 import groceriesRoutes from './routes/groceries.js';
+import groceryItemsRoutes from './routes/groceryItems.js';
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/foods', foodsRoutes);
 app.use('/api/overrides', overridesRoutes);
 app.use('/api/groceries', groceriesRoutes);
+app.use('/api/grocery-items', groceryItemsRoutes);
 
 // Not attached here — callers (local index.js, the Vercel function) may
 // register more routes after importing `app` (e.g. static file serving),

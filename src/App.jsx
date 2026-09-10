@@ -3,6 +3,7 @@ import { useAuth } from './context/AuthContext';
 import { getPermission, requestPermission } from './utils/notifications';
 import TimerView from './components/TimerView';
 import GroceriesView from './components/GroceriesView';
+import ReportsView from './components/ReportsView';
 import SleepWarning from './components/SleepWarning';
 import AuthScreen from './components/AuthScreen';
 import './App.css';
@@ -11,6 +12,7 @@ const STORAGE_KEY = 'cook-timer.active-tab.v1';
 const TABS = [
   { id: 'timer', label: '⏲ Timer' },
   { id: 'groceries', label: '🛒 Groceries' },
+  { id: 'reports', label: '📊 Reports' },
 ];
 
 export default function App() {
@@ -42,7 +44,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="app__header">
+      <header className="app__header no-print">
         <div className="app__title">
           <span className="app__title-icon" aria-hidden="true">⏲</span>
           <div>
@@ -65,7 +67,7 @@ export default function App() {
         </div>
       </header>
 
-      <nav className="tab-nav" role="tablist" aria-label="Sections">
+      <nav className="tab-nav no-print" role="tablist" aria-label="Sections">
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -83,10 +85,12 @@ export default function App() {
       {tab === 'timer' && <SleepWarning />}
 
       <main className="app__main">
-        {tab === 'timer' ? <TimerView /> : <GroceriesView />}
+        {tab === 'timer' && <TimerView />}
+        {tab === 'groceries' && <GroceriesView />}
+        {tab === 'reports' && <ReportsView />}
       </main>
 
-      <footer className="app__footer">
+      <footer className="app__footer no-print">
         Synced to your account — pick up where you left off on any device.
       </footer>
     </div>

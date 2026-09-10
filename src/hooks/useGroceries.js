@@ -11,7 +11,13 @@ function mapTrip(t) {
     id: t._id,
     name: t.name,
     createdAt: new Date(t.createdAt).getTime(),
-    items: t.items.map((it) => ({ id: it._id, name: it.name, price: it.price, bought: it.bought })),
+    items: t.items.map((it) => ({
+      id: it._id,
+      name: it.name,
+      price: it.price,
+      quantity: it.quantity ?? 1,
+      bought: it.bought,
+    })),
   };
 }
 
@@ -71,10 +77,19 @@ export function useGroceries() {
 
   const setActiveTrip = useCallback((tripId) => setActiveTripId(tripId), []);
 
-  const addItem = useCallback(async (tripId, name, price) => {
-    const { trip } = await api.post(`/groceries/${tripId}/items`, { name, price });
+  const addItem = useCallback(async (tripId, name, price, quantity) => {
+    const { trip } = await api.post(`/groceries/${tripId}/items`, { name, price, quantity });
     const mapped = mapTrip(trip);
     setTrips((prev) => prev.map((t) => (t.id === tripId ? mapped : t)));
+  }, []);
+
+  // Bulk-adds items parsed from a pasted list in one request. Returns how
+  // many were actually added so the caller can confirm it to the user.
+  const addItems = useCallback(async (tripId, items) => {
+    const { trip } = await api.post(`/groceries/${tripId}/items/bulk`, { items });
+    const mapped = mapTrip(trip);
+    setTrips((prev) => prev.map((t) => (t.id === tripId ? mapped : t)));
+    return items.length;
   }, []);
 
   const updateItem = useCallback((tripId, itemId, patch) => {
@@ -119,6 +134,7 @@ export function useGroceries() {
     renameTrip,
     setActiveTrip,
     addItem,
+    addItems,
     updateItem,
     toggleBought,
     removeItem,

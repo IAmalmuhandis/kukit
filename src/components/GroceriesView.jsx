@@ -1,7 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useGroceries } from '../hooks/useGroceries';
+import { useCustomGroceryItems } from '../hooks/useCustomGroceryItems';
 import GroceryItemRow from './GroceryItemRow';
 import AddGroceryItem from './AddGroceryItem';
+import { formatMoney } from '../utils/format';
+import { PRESET_GROCERY_ITEMS } from '../data/presetGroceryItems';
 
 export default function GroceriesView() {
   const {
@@ -15,10 +18,13 @@ export default function GroceriesView() {
     renameTrip,
     setActiveTrip,
     addItem,
+    addItems,
     updateItem,
     toggleBought,
     removeItem,
   } = useGroceries();
+  const { customItems, addCustomItem } = useCustomGroceryItems();
+  const catalog = useMemo(() => [...PRESET_GROCERY_ITEMS, ...customItems], [customItems]);
 
   const [renaming, setRenaming] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
@@ -36,10 +42,9 @@ export default function GroceriesView() {
 
   if (!activeTrip) return null;
 
-  const total = activeTrip.items.reduce((sum, it) => sum + (Number(it.price) || 0), 0);
-  const spent = activeTrip.items
-    .filter((it) => it.bought)
-    .reduce((sum, it) => sum + (Number(it.price) || 0), 0);
+  const lineTotal = (it) => (Number(it.price) || 0) * (Number(it.quantity) || 1);
+  const total = activeTrip.items.reduce((sum, it) => sum + lineTotal(it), 0);
+  const spent = activeTrip.items.filter((it) => it.bought).reduce((sum, it) => sum + lineTotal(it), 0);
   const boughtCount = activeTrip.items.filter((it) => it.bought).length;
 
   function startRename() {
@@ -108,12 +113,17 @@ export default function GroceriesView() {
             {boughtCount}/{activeTrip.items.length} bought
           </span>
           <span className="groceries__total-amount">
-            ₦{spent.toFixed(2)} <span className="groceries__total-of">/ ₦{total.toFixed(2)}</span>
+            {formatMoney(spent)} <span className="groceries__total-of">/ {formatMoney(total)}</span>
           </span>
         </div>
       </div>
 
-      <AddGroceryItem onAdd={(name, price) => addItem(activeTrip.id, name, price)} />
+      <AddGroceryItem
+        onAdd={(name, price, quantity) => addItem(activeTrip.id, name, price, quantity)}
+        onAddMany={(items) => addItems(activeTrip.id, items)}
+        customItems={customItems}
+        onAddCustomItem={addCustomItem}
+      />
 
       {activeTrip.items.length === 0 ? (
         <p className="picker__empty">No items yet — add what you need above.</p>
@@ -123,6 +133,7 @@ export default function GroceriesView() {
             <GroceryItemRow
               key={item.id}
               item={item}
+              catalog={catalog}
               onToggle={() => toggleBought(activeTrip.id, item.id)}
               onUpdate={(patch) => updateItem(activeTrip.id, item.id, patch)}
               onRemove={() => removeItem(activeTrip.id, item.id)}

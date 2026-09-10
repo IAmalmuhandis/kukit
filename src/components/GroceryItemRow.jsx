@@ -1,15 +1,20 @@
 import { useState } from 'react';
+import { formatMoney } from '../utils/format';
+import { canonicalizeName } from '../utils/groceryCatalog';
 
-export default function GroceryItemRow({ item, onToggle, onUpdate, onRemove }) {
+export default function GroceryItemRow({ item, catalog, onToggle, onUpdate, onRemove }) {
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(item.name);
 
   function saveName() {
     const trimmed = nameDraft.trim();
-    if (trimmed) onUpdate({ name: trimmed });
+    if (trimmed) onUpdate({ name: catalog ? canonicalizeName(trimmed, catalog) : trimmed });
     else setNameDraft(item.name);
     setEditingName(false);
   }
+
+  const quantity = Number(item.quantity) || 1;
+  const lineTotal = (Number(item.price) || 0) * quantity;
 
   return (
     <div className={`grocery-item ${item.bought ? 'grocery-item--bought' : ''}`}>
@@ -43,7 +48,18 @@ export default function GroceryItemRow({ item, onToggle, onUpdate, onRemove }) {
         </button>
       )}
 
-      <label className="grocery-item__price">
+      <label className="grocery-item__qty" title="Quantity">
+        ×
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          value={item.quantity ?? 1}
+          onChange={(e) => onUpdate({ quantity: Math.max(0, Number(e.target.value)) || 1 })}
+        />
+      </label>
+
+      <label className="grocery-item__price" title="Unit price">
         ₦
         <input
           type="number"
@@ -53,6 +69,8 @@ export default function GroceryItemRow({ item, onToggle, onUpdate, onRemove }) {
           onChange={(e) => onUpdate({ price: Math.max(0, Number(e.target.value) || 0) })}
         />
       </label>
+
+      {quantity !== 1 && <span className="grocery-item__line-total">{formatMoney(lineTotal)}</span>}
 
       <button type="button" className="grocery-item__remove" onClick={onRemove} aria-label={`Remove ${item.name}`}>
         ×
